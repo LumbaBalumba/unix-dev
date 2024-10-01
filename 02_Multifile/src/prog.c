@@ -1,5 +1,5 @@
 #include "outlib.h"
-#include <stdio.h>
+
 int
 main(int argc, char *argv[])
 {
@@ -10,6 +10,6 @@ main(int argc, char *argv[])
             output(argv[i]);
         output("<DONE>");
     } else
-        usage(argv[0]);
+        usage("argv[0]");
     return 0;
 }
