@@ -35,3 +35,6 @@ clean:
 
 distclean: clean
 ~ rm -rf $(BUILD_DIR)
+
+test: distclean all
+~ mkdir -p test
