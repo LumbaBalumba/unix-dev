@@ -5,7 +5,7 @@ SOURCE_DIR = src
 TEST_DIR = test
 GENERATES = prog prog-a prog-so README liboutput_static.a liboutput.so
 TARGET_FILES = ("${GENERATES[@]/#/$(BUILD_DIR)}")
-TRASH = $(BUILD_DIR)/*.o $(BUILD_DIR)/*~ $(BUILD_DIR)/o.*
+TRASH = $(BUILD_DIR)/*.o $(BUILD_DIR)/*~ $(BUILD_DIR)/o.* README
 
 $(BUILD_DIR)/%.o:   $(SOURCE_DIR)/%.c
 ~ mkdir -p $(BUILD_DIR)
@@ -32,7 +32,7 @@ README: $(BUILD_DIR)/prog $(BUILD_DIR)/prog-a
 ~ ./$< 2> $@
 
 clean:
-~ rm -f $(TRASH)
+~ rm -rf $(TRASH) $(TEST_DIR)
 
 distclean: clean
 ~ rm -rf $(BUILD_DIR)
