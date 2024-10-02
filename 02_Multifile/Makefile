@@ -2,6 +2,7 @@
 
 BUILD_DIR = bin
 SOURCE_DIR = src
+TEST_DIR = test
 GENERATES = prog prog-a prog-so README liboutput_static.a liboutput.so
 TARGET_FILES = ("${GENERATES[@]/#/$(BUILD_DIR)}")
 TRASH = $(BUILD_DIR)/*.o $(BUILD_DIR)/*~ $(BUILD_DIR)/o.*
@@ -36,5 +37,27 @@ clean:
 distclean: clean
 ~ rm -rf $(BUILD_DIR)
 
-test: distclean all
-~ mkdir -p test
+test: test-no-input test-1-input test-3-input
+
+
+
+test-prep:
+~ mkdir -p $(TEST_DIR)
+
+test-no-input: distclean $(BUILD_DIR)/prog $(BUILD_DIR)/prog-a $(BUILD_DIR)/prog-so test-prep
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog > $(TEST_DIR)/prog 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-a > $(TEST_DIR)/prog-a 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-so > $(TEST_DIR)/prog-so 2>&1
+~ cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog-so $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-so
+
+test-1-input: distclean $(BUILD_DIR)/prog $(BUILD_DIR)/prog-a $(BUILD_DIR)/prog-so test-prep
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog 1 > $(TEST_DIR)/prog 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-a 1 > $(TEST_DIR)/prog-a 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-so 1 > $(TEST_DIR)/prog-so 2>&1
+~ cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog-so $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-so
+
+test-3-input: distclean $(BUILD_DIR)/prog $(BUILD_DIR)/prog-a $(BUILD_DIR)/prog-so test-prep
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog 1 2 3 > $(TEST_DIR)/prog 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-a 1 2 3 > $(TEST_DIR)/prog-a 2>&1
+~ LD_LIBRARY_PATH=$(BUILD_DIR) $(BUILD_DIR)/prog-so 1 2 3 > $(TEST_DIR)/prog-so 2>&1
+~ cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog-so $(TEST_DIR)/prog-a && cmp $(TEST_DIR)/prog $(TEST_DIR)/prog-so
