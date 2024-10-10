@@ -1,7 +1,7 @@
 set pagination off
 break main
 run 1 12 > /dev/null
-break 39
+break 52
 commands
     silent
     if (i % 5 == 0)

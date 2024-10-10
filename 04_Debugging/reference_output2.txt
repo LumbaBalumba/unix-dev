@@ -1,0 +1,8 @@
+@@@start = -100, end = 100, step = 3, i = -19, index = 28
+@@@start = -100, end = 100, step = 3, i = -16, index = 29
+@@@start = -100, end = 100, step = 3, i = -13, index = 30
+@@@start = -100, end = 100, step = 3, i = -10, index = 31
+@@@start = -100, end = 100, step = 3, i = -7, index = 32
+@@@start = -100, end = 100, step = 3, i = -4, index = 33
+@@@start = -100, end = 100, step = 3, i = -1, index = 34
+@@@start = -100, end = 100, step = 3, i = 2, index = 35
