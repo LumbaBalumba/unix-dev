@@ -3,8 +3,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_COLORS 8
+
+const char *color_codes[MAX_COLORS] = {
+        "\033[31m",// Red
+        "\033[32m",// Green
+        "\033[33m",// Yellow
+        "\033[34m",// Blue
+        "\033[35m",// Magenta
+        "\033[36m",// Cyan
+        "\033[91m",// Light Red
+        "\033[92m" // Light Green
+};
+
+#define COLOR_RESET "\033[0m"
+
 char *
-process_substitution(const char *substitution, const char *input_string, regmatch_t *pmatch, size_t nmatch, size_t nsub, int *error)
+process_substitution(const char *substitution, const char *input_string, regmatch_t *pmatch, size_t nmatch, size_t nsub, int *error, int color_mode)
 {
     size_t bufsize = 1024;
     char *result = malloc(bufsize);
@@ -22,9 +37,9 @@ process_substitution(const char *substitution, const char *input_string, regmatc
             p++;
             if (*p >= '1' && *p <= '9') {
                 int group_num = *p - '0';
-                if ((size_t) group_num <= nsub && pmatch[group_num].rm_so != -1) {
+                if (group_num <= nsub && pmatch[group_num].rm_so != -1) {
                     size_t len = pmatch[group_num].rm_eo - pmatch[group_num].rm_so;
-                    while (result_len + len + 1 > bufsize) {
+                    while (result_len + len + 10 > bufsize) {
                         bufsize *= 2;
                         result = realloc(result, bufsize);
                         if (!result) {
@@ -33,8 +48,19 @@ process_substitution(const char *substitution, const char *input_string, regmatc
                             return NULL;
                         }
                     }
+                    if (color_mode) {
+                        const char *color_code = color_codes[(group_num - 1) % MAX_COLORS];
+                        size_t color_len = strlen(color_code);
+                        memcpy(result + result_len, color_code, color_len);
+                        result_len += color_len;
+                    }
                     strncpy(result + result_len, input_string + pmatch[group_num].rm_so, len);
                     result_len += len;
+                    if (color_mode) {
+                        size_t reset_len = strlen(COLOR_RESET);
+                        memcpy(result + result_len, COLOR_RESET, reset_len);
+                        result_len += reset_len;
+                    }
                     result[result_len] = '\0';
                 } else {
                     fprintf(stderr, "Invalid backreference: \\%d\n", group_num);
@@ -89,17 +115,31 @@ process_substitution(const char *substitution, const char *input_string, regmatc
     return result;
 }
 
+void
+print_usage()
+{
+    fprintf(stderr, "Usage: esub [-c|--color] regexp substitution string\n");
+}
+
 int
 main(int argc, char *argv[])
 {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: esub regexp substitution string\n");
+    int color_mode = 0;
+    int arg_index = 1;
+
+    if (argc > 1 && (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--color") == 0)) {
+        color_mode = 1;
+        arg_index++;
+    }
+
+    if (argc - arg_index != 3) {
+        print_usage();
         return 1;
     }
 
-    char *pattern = argv[1];
-    char *substitution = argv[2];
-    char *input_string = argv[3];
+    char *pattern = argv[arg_index];
+    char *substitution = argv[arg_index + 1];
+    char *input_string = argv[arg_index + 2];
 
     regex_t regex;
     int reti;
@@ -117,7 +157,7 @@ main(int argc, char *argv[])
     reti = regexec(&regex, input_string, nmatch, pmatch, 0);
     if (!reti) {
         int error = 0;
-        char *substituted = process_substitution(substitution, input_string, pmatch, nmatch, regex.re_nsub, &error);
+        char *substituted = process_substitution(substitution, input_string, pmatch, nmatch, regex.re_nsub, &error, color_mode);
         if (error) {
             regfree(&regex);
             return 1;
