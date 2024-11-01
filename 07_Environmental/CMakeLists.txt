@@ -18,6 +18,7 @@ else()
   set(READLINE_LIBS)
 endif()
 
+find_library(RHASH_LIB rhash REQUIRED)
 target_link_libraries(rhasher rhash ${READLINE_LIBS})
 
 enable_testing()
